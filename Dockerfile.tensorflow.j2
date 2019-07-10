@@ -1,0 +1,7 @@
+FROM clearlinux/stacks-{{ DLRS_TYPE }}
+MAINTAINER Victor Morales <electrocucaracha@gmail.com>
+
+RUN git clone --depth 1 http://github.com/tensorflow/benchmarks -b cnn_tf_v1.12_compatible /opt/benchmarks
+WORKDIR /opt/benchmarks/scripts/tf_cnn_benchmarks/
+
+CMD ["python", "./tf_cnn_benchmarks.py", "--device=cpu", "--model=resnet50", "--data_format=NHWC"]

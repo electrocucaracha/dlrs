@@ -1,0 +1,7 @@
+FROM clearlinux/stacks-{{ DLRS_TYPE }}
+MAINTAINER Victor Morales <electrocucaracha@gmail.com>
+
+RUN git clone --depth 1 https://github.com/pytorch/pytorch -b v1.1.0 /opt/pytorch/
+WORKDIR /opt/pytorch/caffe2/python
+
+CMD ["python", "./convnet_benchmarks.py", "--batch_size", "32", "--cpu", "--model", "AlexNet"]

@@ -1,0 +1,6 @@
+.vagrant
+.tox
+*.swp
+*.log
+.terraform*
+terraform*
