@@ -83,6 +83,44 @@ function _install_dj {
     sudo pip install docker-jinja
 }
 
+# _vercmp() - Function that compares two versions
+function _vercmp {
+    local v1=$1
+    local op=$2
+    local v2=$3
+    local result
+
+    # sort the two numbers with sort's "-V" argument.  Based on if v2
+    # swapped places with v1, we can determine ordering.
+    result=$(echo -e "$v1\n$v2" | sort -V | head -1)
+
+    case $op in
+        "==")
+            [ "$v1" = "$v2" ]
+            return
+            ;;
+        ">")
+            [ "$v1" != "$v2" ] && [ "$result" = "$v2" ]
+            return
+            ;;
+        "<")
+            [ "$v1" != "$v2" ] && [ "$result" = "$v1" ]
+            return
+            ;;
+        ">=")
+            [ "$result" = "$v2" ]
+            return
+            ;;
+        "<=")
+            [ "$result" = "$v1" ]
+            return
+            ;;
+        *)
+            die $LINENO "unrecognised op: $op"
+            ;;
+    esac
+}
+
 # Validations
 if ! lscpu | grep -e avx512 && [[ "${DLRS_TYPE}" == *mkl* ]]; then
     echo "ERROR - Your platform doesn't support the Intel® AVX-512"
@@ -97,10 +135,24 @@ case ${ID,,} in
     clear-linux-os)
         sudo mkdir -p /etc/systemd/resolved.conf.d
         printf "[Resolve]\nDNSSEC=false" | sudo tee /etc/systemd/resolved.conf.d/dnssec.conf
+
+        clr_version=$(swupd info | grep "Installed version:" | awk -F ":" '{print $2}')
+        if _vercmp "${clr_version}" '<' "26240" ; then
+            echo "WARN - The Clear Linux OS version ${clr_version} is"
+            echo "not supported and it'll be upgraded"
+            sudo -E swupd update
+        fi
     ;;
 esac
 
 _install_docker
+docker_server_version=$(sudo docker version --format '{{.Server.Version}}')
+if _vercmp "${docker_server_version}" '<' "18.06.1" ; then
+    echo "ERROR - The Docker server version ${docker_server_version}"
+    echo "is not supported."
+    sudo -E swupd update
+fi
+
 echo "export DLRS_TYPE=$DLRS_TYPE" >> "$HOME/.bashrc"
 if ! sudo docker images | grep -e "electrocucaracha/${DLRS_TYPE}"; then
     mkdir -p "/tmp/${DLRS_TYPE}"
