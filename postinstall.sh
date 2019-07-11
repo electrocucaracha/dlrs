@@ -83,6 +83,15 @@ function _install_dj {
     sudo pip install docker-jinja
 }
 
+# shellcheck disable=SC1091
+source /etc/os-release || source /usr/lib/os-release
+case ${ID,,} in
+    clear-linux-os)
+        sudo mkdir -p /etc/systemd/resolved.conf.d
+        printf "[Resolve]\nDNSSEC=false" | sudo tee /etc/systemd/resolved.conf.d/dnssec.conf
+    ;;
+esac
+
 _install_docker
 echo "export DLRS_TYPE=$DLRS_TYPE" >> "$HOME/.bashrc"
 if ! sudo docker images | grep -e "electrocucaracha/${DLRS_TYPE}"; then
