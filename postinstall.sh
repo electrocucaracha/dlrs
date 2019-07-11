@@ -121,8 +121,11 @@ function _vercmp {
     esac
 }
 
+echo "export DLRS_TYPE=$DLRS_TYPE" >> "$HOME/.bashrc"
+
 # Validations
-if ! lscpu | grep -e avx512 && [[ "${DLRS_TYPE}" == *mkl* ]]; then
+if ! lscpu | grep avx512f | grep avx512vl | grep avx512bw | grep avx512dq | grep avx512cd \
+ && [[ "${DLRS_TYPE}" == *mkl* ]]; then
     echo "ERROR - Your platform doesn't support the Intel® AVX-512"
     echo "instruction set which is required for Intel® MKL-DNN or"
     echo "Intel® MKL-DNN-VNNI image"
@@ -153,7 +156,6 @@ if _vercmp "${docker_server_version}" '<' "18.06.1" ; then
     sudo -E swupd update
 fi
 
-echo "export DLRS_TYPE=$DLRS_TYPE" >> "$HOME/.bashrc"
 if ! sudo docker images | grep -e "electrocucaracha/${DLRS_TYPE}"; then
     mkdir -p "/tmp/${DLRS_TYPE}"
     dockerfile="Dockerfile.tensorflow.j2"
