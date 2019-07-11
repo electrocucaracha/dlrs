@@ -83,6 +83,14 @@ function _install_dj {
     sudo pip install docker-jinja
 }
 
+# Validations
+if ! lscpu | grep -e avx512 && [[ "${DLRS_TYPE}" == *mkl* ]]; then
+    echo "ERROR - Your platform doesn't support the Intel® AVX-512"
+    echo "instruction set which is required for Intel® MKL-DNN or"
+    echo "Intel® MKL-DNN-VNNI image"
+    exit
+fi
+
 # shellcheck disable=SC1091
 source /etc/os-release || source /usr/lib/os-release
 case ${ID,,} in
