@@ -10,7 +10,9 @@
 
 set -o nounset
 set -o pipefail
-set -o xtrace
+if [ "${DLRS_DEBUG:-false}" == "true" ]; then
+    set -o xtrace
+fi
 
 # _install_docker() - Download and install docker-engine
 function _install_docker {
@@ -83,8 +85,7 @@ function _install_dj {
 
 _install_docker
 echo "export DLRS_TYPE=$DLRS_TYPE" >> "$HOME/.bashrc"
-
-if ! sudo docker images | grep -e "${DLRS_TYPE}"; then
+if ! sudo docker images | grep -e "electrocucaracha/${DLRS_TYPE}"; then
     mkdir -p "/tmp/${DLRS_TYPE}"
     dockerfile="Dockerfile.tensorflow.j2"
     if [[ "${DLRS_TYPE}" == *pytorch* ]]; then
@@ -94,4 +95,5 @@ if ! sudo docker images | grep -e "${DLRS_TYPE}"; then
     dj --dockerfile ${dockerfile} --outfile "/tmp/${DLRS_TYPE}/Dockerfile" --env DLRS_TYPE="${DLRS_TYPE}"
     sudo docker build --no-cache --tag "electrocucaracha/${DLRS_TYPE}" "/tmp/${DLRS_TYPE}/"
 fi
-sudo docker run --detach "electrocucaracha/${DLRS_TYPE}"
+container_id=$(sudo docker run --detach --privileged "electrocucaracha/${DLRS_TYPE}")
+echo "docker logs -f $container_id"

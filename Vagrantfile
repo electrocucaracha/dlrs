@@ -48,7 +48,7 @@ Vagrant.configure("2") do |config|
         }
         sh.inline = <<-SHELL
           cd /vagrant/
-          ./postinstall.sh | tee "#{dlrs_type}_postinstall.log"
+          DLRS_DEBUG=true ./postinstall.sh | tee "#{dlrs_type}_postinstall.log"
         SHELL
       end
     end
