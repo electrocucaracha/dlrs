@@ -5,13 +5,17 @@ if ENV['no_proxy'] != nil or ENV['NO_PROXY']
   $no_proxy = ENV['NO_PROXY'] || ENV['no_proxy'] || "127.0.0.1,localhost"
 end
 socks_proxy = ENV['socks_proxy'] || ENV['SOCKS_PROXY'] || ""
+File.exists?("/usr/share/qemu/OVMF.fd") ? loader = "/usr/share/qemu/OVMF.fd" : loader = File.join(File.dirname(__FILE__), "OVMF.fd")
+if not File.exists?(loader)
+  system('curl -O https://download.clearlinux.org/image/OVMF.fd')
+end
 
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt
   config.vm.provider :virtualbox
 
   config.vm.box = "AntonioMeireles/ClearLinux"
-  config.vm.box_version = "28510"
+  config.vm.box_version = "30260"
   config.vm.synced_folder './', '/vagrant',
     rsync__args: ["--verbose", "--archive", "--delete", "-z"]
 
@@ -38,6 +42,7 @@ Vagrant.configure("2") do |config|
     v.management_network_address = "192.168.126.0/27"
     v.management_network_name = "dlrs-mgmt-net"
     v.random_hostname = true
+    v.loader = loader
   end
   ["dlrs-oss", "dlrs-mkl", "pytorch-oss", "pytorch-mkl"].each do |dlrs_type|
     config.vm.define dlrs_type do |nodeconfig|
