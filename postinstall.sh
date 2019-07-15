@@ -10,6 +10,7 @@
 
 set -o nounset
 set -o pipefail
+set -o errexit
 if [ "${DLRS_DEBUG:-false}" == "true" ]; then
     set -o xtrace
 fi
@@ -69,6 +70,7 @@ function _install_docker {
         sudo PROXY="${socks_tmp%:*}" PORT="${socks_tmp#*:}" ./$chameleonsocks_filename --install
         rm $chameleonsocks_filename
     fi
+    sudo systemctl enable --now docker
 }
 
 # _install_dj() - Install a Docker jinja processor
