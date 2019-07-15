@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
 
   [:virtualbox, :libvirt].each do |provider|
     config.vm.provider provider do |p, override|
-      p.cpus = 18
+      p.cpus = 8
       p.memory = 8192
     end
   end
