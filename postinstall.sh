@@ -78,6 +78,16 @@ function _install_dj {
     if command -v dj; then
         return
     fi
+    if ! command -v python; then
+        echo "Installing python..."
+        # shellcheck disable=SC1091
+        source /etc/os-release || source /usr/lib/os-release
+        case ${ID,,} in
+            clear-linux-os)
+                sudo -E swupd bundle-add python3-basic
+            ;;
+        esac
+    fi
     if ! command -v pip; then
         echo "Installing python package manager..."
         curl -sL https://bootstrap.pypa.io/get-pip.py | sudo python
