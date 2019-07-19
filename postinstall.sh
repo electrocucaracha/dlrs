@@ -69,7 +69,6 @@ function _install_docker {
         echo "${config::-1} } } }" | tee "$HOME/.docker/config.json"
         sudo cp "$HOME/.docker/config.json" /root/.docker/config.json
         sudo systemctl daemon-reload
-        sudo systemctl restart docker
     elif [ -n "${SOCKS_PROXY:-}" ]; then
         wget "https://raw.githubusercontent.com/crops/chameleonsocks/master/$chameleonsocks_filename"
         chmod 755 "$chameleonsocks_filename"
@@ -79,6 +78,7 @@ function _install_docker {
         rm $chameleonsocks_filename
     fi
     sudo systemctl enable --now docker
+    sudo systemctl restart docker
 }
 
 # _install_dj() - Install a Docker jinja processor
