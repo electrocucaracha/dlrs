@@ -146,19 +146,18 @@ function _vercmp {
 
 echo "export DLRS_TYPE=$DLRS_TYPE" >> "$HOME/.bashrc"
 
-# Validations
-if ! lscpu | grep avx512f | grep avx512vl | grep avx512bw | grep avx512dq | grep avx512cd \
-    && [[ "${DLRS_TYPE}" == *mkl* ]]; then
-    echo "ERROR - Your platform doesn't support the Intel® AVX-512"
-    echo "instruction set which is required for Intel® MKL-DNN or"
-    echo "Intel® MKL-DNN-VNNI image"
-    exit
-fi
-
 # shellcheck disable=SC1091
 source /etc/os-release || source /usr/lib/os-release
 case ${ID,,} in
     clear-linux-os)
+        # Validations
+        if ! lscpu | grep avx512f | grep avx512vl | grep avx512bw | grep avx512dq | grep avx512cd \
+            && [[ "${DLRS_TYPE}" == *mkl* ]]; then
+            echo "ERROR - Your platform doesn't support the Intel® AVX-512"
+            echo "instruction set which is required for Intel® MKL-DNN or"
+            echo "Intel® MKL-DNN-VNNI image"
+            exit
+        fi
         sudo mkdir -p /etc/systemd/resolved.conf.d
         printf "[Resolve]\nDNSSEC=false" | sudo tee /etc/systemd/resolved.conf.d/dnssec.conf
 
