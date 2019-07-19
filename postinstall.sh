@@ -32,6 +32,7 @@ function _install_docker {
             sudo systemctl unmask docker.service
         ;;
         ubuntu|debian)
+            _install_nvidia_drivers
             curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
             sudo add-apt-repository \
             "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
@@ -141,6 +142,42 @@ function _vercmp {
         *)
             die $LINENO "unrecognised op: $op"
             ;;
+    esac
+}
+
+# _install_nvidia_drivers() - Function that install CUDA Toolkit
+function _install_nvidia_drivers {
+    if ! lspci | grep -i nvidia; then
+        echo "WARN - The GPU controller is not CUDA-capable"
+        return
+    fi
+    if command -v gcc; then
+        echo "Installing gcc..."
+        # shellcheck disable=SC1091
+        source /etc/os-release || source /usr/lib/os-release
+        case ${ID,,} in
+            ubuntu|debian)
+                sudo apt install -y gcc
+            ;;
+        esac
+    fi
+    # shellcheck disable=SC1091
+    source /etc/os-release || source /usr/lib/os-release
+    case ${ID,,} in
+        ubuntu|debian)
+            sudo apt-get install "linux-headers-$(uname -r)"
+            prefix="cuda-repo"
+            version="10.1"
+            distro="${ID}${VERSION_ID//.}"
+            deb_file="${prefix}-${distro}_${version}.168-1_amd64.deb"
+            wget "http://developer.download.nvidia.com/compute/cuda/repos/${distro}/$(uname -m)/$deb_file"
+            sudo dpkg -i "$deb_file"
+            rm "$deb_file"
+            sudo apt-key adv --fetch-keys "http://developer.download.nvidia.com/compute/cuda/repos/${distro}/$(uname -m)/7fa2af80.pub"
+            sudo apt-get update
+            sudo apt-get install -y cuda
+            sudo systemctl start nvidia-persistenced
+        ;;
     esac
 }
 
