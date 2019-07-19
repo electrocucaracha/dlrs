@@ -94,6 +94,9 @@ function _install_dj {
             clear-linux-os)
                 sudo -E swupd bundle-add python3-basic
             ;;
+            ubuntu|debian)
+                sudo apt install -y python
+            ;;
         esac
     fi
     if ! command -v pip; then
