@@ -1,11 +1,7 @@
-#!/bin/bash
-# SPDX-license-identifier: Apache-2.0
-##############################################################################
-# Copyright (c) 2019
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the Apache License, Version 2.0
-# which accompanies this distribution, and is available at
-# http://www.apache.org/licenses/LICENSE-2.0
-##############################################################################
-
-curl -fsSL https://raw.githubusercontent.com/electrocucaracha/dlrs/master/postinstall.sh | bash
+#cloud-config
+package_upgrade: false
+hostname: "${hostname}"
+packages:
+  - curl
+runcmd:
+  - su ${user} -c "curl -fsSL https://raw.githubusercontent.com/electrocucaracha/dlrs/master/start.sh | DLRS_DEBUG=true DLRS_TYPE=${type} bash"
