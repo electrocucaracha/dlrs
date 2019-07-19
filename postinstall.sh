@@ -31,8 +31,16 @@ function _install_docker {
             sudo -E swupd bundle-add containers-basic
             sudo systemctl unmask docker.service
         ;;
-        *)
-            curl -fsSL https://get.docker.com/ | sh
+        ubuntu|debian)
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+            sudo add-apt-repository \
+            "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) stable"
+            curl -s -l https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+            curl -s -l "https://nvidia.github.io/nvidia-docker/$ID$VERSION_ID/nvidia-docker.list" | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+            sudo apt-get update
+            sudo apt install -y 'docker-ce=5:18.09.7~3-0~ubuntu-xenial'
+            sudo apt-get install -y nvidia-docker2
         ;;
     esac
 
@@ -178,5 +186,14 @@ if ! sudo docker images | grep -e "electrocucaracha/${DLRS_TYPE}"; then
     dj --dockerfile ${dockerfile} --outfile "/tmp/${DLRS_TYPE}/Dockerfile" --env DLRS_TYPE="${DLRS_TYPE}"
     sudo docker build --no-cache --tag "electrocucaracha/${DLRS_TYPE}" "/tmp/${DLRS_TYPE}/"
 fi
-container_id=$(sudo docker run --detach --privileged "electrocucaracha/${DLRS_TYPE}")
+
+docker_run_cmd="sudo docker run --detach --privileged"
+# shellcheck disable=SC1091
+source /etc/os-release || source /usr/lib/os-release
+    case ${ID,,} in
+        ubuntu|debian)
+            docker_run_cmd+=" --runtime=nvidia"
+    ;;
+esac
+container_id=$($docker_run_cmd "electrocucaracha/${DLRS_TYPE}")
 echo "docker logs -f $container_id"

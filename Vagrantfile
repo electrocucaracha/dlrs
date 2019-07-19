@@ -1,21 +1,28 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+box = {
+  :gpu => { :name => 'elastic/ubuntu-16.04-x86_64', :version=> '20180210.0.0' },
+  :cpu => { :name => 'AntonioMeireles/ClearLinux', :version=> '30260' }
+}
+
+dlrs_compute = (ENV['DLRS_COMPUTE'] || :cpu).to_sym
 if ENV['no_proxy'] != nil or ENV['NO_PROXY']
   $no_proxy = ENV['NO_PROXY'] || ENV['no_proxy'] || "127.0.0.1,localhost"
 end
 socks_proxy = ENV['socks_proxy'] || ENV['SOCKS_PROXY'] || ""
-File.exists?("/usr/share/qemu/OVMF.fd") ? loader = "/usr/share/qemu/OVMF.fd" : loader = File.join(File.dirname(__FILE__), "OVMF.fd")
-if not File.exists?(loader)
-  system('curl -O https://download.clearlinux.org/image/OVMF.fd')
+if dlrs_compute == :cpu
+  File.exists?("/usr/share/qemu/OVMF.fd") ? loader = "/usr/share/qemu/OVMF.fd" : loader = File.join(File.dirname(__FILE__), "OVMF.fd")
+  if not File.exists?(loader)
+    system('curl -O https://download.clearlinux.org/image/OVMF.fd')
+  end
 end
 
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt
   config.vm.provider :virtualbox
-
-  config.vm.box = "AntonioMeireles/ClearLinux"
-  config.vm.box_version = "30260"
+  config.vm.box = box[dlrs_compute][:name]
+  config.vm.box_version = box[dlrs_compute][:version]
   config.vm.synced_folder './', '/vagrant',
     rsync__args: ["--verbose", "--archive", "--delete", "-z"]
 
@@ -45,7 +52,7 @@ Vagrant.configure("2") do |config|
     v.loader = loader
   end
   ["dlrs-oss", "dlrs-mkl", "pytorch-oss", "pytorch-mkl"].each do |dlrs_type|
-    config.vm.define dlrs_type do |nodeconfig|
+    config.vm.define "#{dlrs_compute}_#{dlrs_type}" do |nodeconfig|
       nodeconfig.vm.provision 'shell', privileged: false do |sh|
         sh.env = {
           'SOCKS_PROXY': "#{socks_proxy}",
