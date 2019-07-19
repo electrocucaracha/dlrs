@@ -229,10 +229,19 @@ fi
 docker_run_cmd="sudo docker run --detach --privileged"
 # shellcheck disable=SC1091
 source /etc/os-release || source /usr/lib/os-release
-    case ${ID,,} in
-        ubuntu|debian)
-            docker_run_cmd+=" --runtime=nvidia"
+container_id=""
+case ${ID,,} in
+    ubuntu|debian)
+        docker_run_cmd+=" --runtime=nvidia"
+        if [[ "${DLRS_TYPE}" == *pytorch-mkl* ]]; then
+            container_id=$($docker_run_cmd "caffe2ai/caffe2:c2v0.8.1.cuda8.cudnn7.ubuntu16.04 python /caffe2/caffe2/python/convnet_benchmarks.py --batch_size 32 --cpu --model AlexNet")
+        else
+            container_id=$($docker_run_cmd "electrocucaracha/${DLRS_TYPE}")
+        fi
+    ;;
+    clear-linux-os)
+        container_id=$($docker_run_cmd "electrocucaracha/${DLRS_TYPE}")
     ;;
 esac
-container_id=$($docker_run_cmd "electrocucaracha/${DLRS_TYPE}")
+
 echo "docker logs -f $container_id"
