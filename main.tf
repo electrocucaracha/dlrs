@@ -167,7 +167,3 @@ resource "aws_instance" "dlrs_gpu_instance" {
     delete_on_termination = true
   }
 }
-
-output "instance_ips" {
-  value = ["${aws_instance.dlrs_cpu_instance.*.public_ip}", "${aws_instance.dlrs_gpu_instance.*.public_ip}"]
-}
