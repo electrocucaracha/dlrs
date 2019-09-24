@@ -10,14 +10,13 @@ running the benchmarks locally or in a Public Cloud Provider as AWS.
 
 ### Virtual Machine
 
-This project provides a [Vagrant file](Vagrantfile) for automate the 
-provisioning process in a Virtual Machines. The setup bash script
-contains the Linux instructions for installing its dependencies 
-required for its usage. This script supports two Virtualization
-technologies (Libvirt and VirtualBox). The following instruction 
-installs and configures the Libvirt provider.
+This project uses [Vagrant tool][2] for provisioning Virtual Machines
+automatically. It's highly recommended to use the  *setup.sh* script
+of the [bootstrap-vagrant project][3] for installing Vagrant
+dependencies and plugins required for its project. The script
+supports two Virtualization providers (Libvirt and VirtualBox).
 
-    $ ./setup.sh -p libvirt
+    $ curl -fsSL https://raw.githubusercontent.com/electrocucaracha/bootstrap-vagrant/master/setup.sh | PROVIDER=libvirt bash
 
 Once Vagrant is installed, it's possible to provision several Virtual
 Machines which run benchmarks in parallel with the following
@@ -29,7 +28,7 @@ instruction:
 
 The Terraform configuration files provided for this project launch a
 single AWS EC2 instance. They require to install the `terraform`
-client previously, for more information visit the [official site][2].
+client previously, for more information visit the [official site][4].
 
     $ terraform init
     $ terraform apply -auto-approve
@@ -39,4 +38,6 @@ client previously, for more information visit the [official site][2].
 Apache-2.0
 
 [1]: https://clearlinux.org/documentation/clear-linux/tutorials/dlrs
-[2]: https://learn.hashicorp.com/terraform/getting-started/install#installing-terraform
+[2]: https://www.vagrantup.com/
+[3]: https://github.com/electrocucaracha/bootstrap-vagrant
+[4]: https://learn.hashicorp.com/terraform/getting-started/install#installing-terraform
